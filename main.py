@@ -32,6 +32,8 @@ def main():
             # Wait for the page to load completely
             page.wait_for_load_state('domcontentloaded')  # Wait for DOM to be ready (not just network idle)
 
+            ############## פתיחת תיק -1 ################
+
             # Wait for the "פתיחת תיק" button to appear in the side panel
             logging.info('Waiting for "פתיחת תיק" button to appear...')
             page.wait_for_selector('text="פתיחת תיק"', state='visible', timeout=5000)  # 5 seconds timeout
@@ -40,22 +42,30 @@ def main():
             logging.info('Clicking on the "פתיחת תיק" button...')
             page.click('text="פתיחת תיק"')
 
+            ############## פתיחת תיק חדש -2 ################
+            
+            # Wait for the "פתיחת תיק חדש" button to appear and click it
+            logging.info('Waiting for the "פתיחת תיק חדש" button...')
+            page.wait_for_selector('span:has-text("פתיחת תיק חדש")', state='visible', timeout=5000)  # Wait for the "פתיחת תיק חדש" button
+
+            # Click the "פתיחת תיק חדש" button
+            logging.info('Clicking on the "פתיחת תיק חדש" button...')
+            page.click('span:has-text("פתיחת תיק חדש")')
+
             # Optionally, you can take a screenshot to verify the result
-            logging.info('Taking a screenshot...')
-            page.screenshot(path="screenshot.png")
+            logging.info('Taking a screenshot after clicking the button...')
+            page.screenshot(path="submitted_screenshot.png")
 
             logging.info('Action completed successfully.')
-        
-             # Add a delay before closing the browser
+
+            # Add a delay before closing the browser
             logging.info('Waiting for 5 seconds before closing the browser...')
             time.sleep(5)  # Delay for 5 seconds
-
 
         except Exception as e:
             logging.error(f"An error occurred: {e}")
             logging.info('Page HTML at error point:\n' + page.content())  # Log current page content for debugging
-        
-        
+
         finally:
             # Close the browser
             logging.info('Closing the browser...')
