@@ -23,7 +23,7 @@ def main():
         try:
             # Go to the URL
             logging.info("Navigating to the website...")
-            page.goto("http://int-netcore1:8001/")
+            page.goto("http://qa-srv19core5:8022/")
 
             # Wait for the "אזור אישי" button to be visible and click it
             logging.info('Clicking on "אזור אישי" button...')
@@ -62,6 +62,25 @@ def main():
             # Click the "פתיחת תיק חדש" button
             logging.info('Clicking on the "פתיחת תיק חדש" button...')
             page.click('span:has-text("פתיחת תיק חדש")')
+
+            ##############  פתיחת תיק חרבות ברזל ###########
+            # Wait for the "להגשת הבקשה" button to be visible and click it
+            logging.info('Waiting for "להגשת הבקשה" button to appear...')
+            page.wait_for_selector('span:has-text("להגשת הבקשה")', state='visible', timeout=5000)  # 5 seconds timeout
+
+            # Click the button once it is visible
+            logging.info('Clicking on the "להגשת הבקשה" button...')
+            page.click('span:has-text("להגשת הבקשה")')
+
+            ################  אישור שהתביעה נדחתה בשלב ההגשה ############
+            # Wait for the "כן" button to be visible and click it
+            logging.info('Waiting for "כן" button to appear...')
+            page.wait_for_selector('span.toggle-text:has-text("כן")', state='visible', timeout=5000)  # 5 seconds timeout
+
+            # Click the "כן" button
+            logging.info('Clicking on the "כן" button...')
+            page.click('span.toggle-text:has-text("כן")')
+
 
             # Optionally, you can take a screenshot to verify the result
             logging.info('Taking a screenshot after clicking the button...')
