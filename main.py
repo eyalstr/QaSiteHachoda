@@ -42,8 +42,19 @@ def main():
             logging.info('Clicking on the "פתיחת תיק" button...')
             page.click('text="פתיחת תיק"')
 
-            ############## פתיחת תיק חדש -2 ################
-            
+            ############## בחירה של חרבות ברזל מתוך רשימה -2 ################
+             # Wait for the dropdown to be clickable and open it
+            logging.info('Waiting for the dropdown to be visible...')
+            page.wait_for_selector('span[role="combobox"]', state='visible', timeout=5000)  # Adjust timeout if needed
+            page.click('span[role="combobox"]')  # Open the dropdown
+
+            # Wait for the specific option to be visible and click it
+            logging.info('Selecting "ועדת ערר קורונה וחרבות ברזל" from the dropdown...')
+            page.wait_for_selector('div.list-item-label[title="ועדת ערר קורונה וחרבות ברזל"]', state='visible', timeout=5000)
+            page.click('div.list-item-label[title="ועדת ערר קורונה וחרבות ברזל"]')  # Click the specific item
+    
+            #################  פתיחת תיק בפועל ##############
+
             # Wait for the "פתיחת תיק חדש" button to appear and click it
             logging.info('Waiting for the "פתיחת תיק חדש" button...')
             page.wait_for_selector('span:has-text("פתיחת תיק חדש")', state='visible', timeout=5000)  # Wait for the "פתיחת תיק חדש" button
