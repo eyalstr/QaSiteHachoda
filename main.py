@@ -1,6 +1,9 @@
 from playwright.sync_api import sync_playwright
 import logging
+import random
 import time  # Import the time module for delay
+from datetime import datetime
+import random
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -72,15 +75,94 @@ def main():
             logging.info('Clicking on the "להגשת הבקשה" button...')
             page.click('span:has-text("להגשת הבקשה")')
 
+            
             ################  אישור שהתביעה נדחתה בשלב ההגשה ############
             # Wait for the "כן" button to be visible and click it
             logging.info('Waiting for "כן" button to appear...')
             page.wait_for_selector('span.toggle-text:has-text("כן")', state='visible', timeout=5000)  # 5 seconds timeout
-
+            # Wait for the page to load completely
+            page.wait_for_load_state('domcontentloaded')  # Wait for DOM to be ready (not just network idle)
+    
             # Click the "כן" button
             logging.info('Clicking on the "כן" button...')
             page.click('span.toggle-text:has-text("כן")')
 
+            ################ הכנס מספר תביעה ############
+           
+            # Wait for the input field with data-cy="textbox_input" to be visible
+            logging.info('Waiting for input field with data-cy="textbox_input"...')
+            page.wait_for_selector('[data-cy="textbox_input"]', state='visible')
+
+            # Enter the value 512341234 into the input field
+            logging.info('Entering value into the input field with data-cy="textbox_input"...')
+            page.fill('[data-cy="textbox_input"]', '512341234')
+
+            ################## תקופת זכאות ######################
+            # Wait for the combobox element to be visible and available
+            logging.info('Waiting for the combobox to be available...')
+            page.wait_for_selector('span[role="combobox"]', state='attached', timeout=5000)
+
+            # Ensure that the combobox is visible (element is not hidden)
+            logging.info('Waiting for the combobox to be visible...')
+            page.wait_for_selector('span[role="combobox"]:visible', timeout=5000)
+
+            # Click the combobox to open the dropdown
+            logging.info('Clicking the combobox to open the dropdown...')
+            page.click('span[role="combobox"]')
+
+            # Wait for the dropdown list (with the role="listbox") to be visible
+            logging.info('Waiting for the dropdown list to be visible...')
+            page.wait_for_selector('ul[role="listbox"]:visible', timeout=5000)
+
+            # Select the item with the label "נובמבר-דצמבר 2023" from the dropdown list
+            logging.info('Selecting the item "נובמבר-דצמבר 2023" from the dropdown list...')
+            page.click('div.list-item-label[title="נובמבר-דצמבר 2023"]')
+
+     
+
+            ################### הכנס תאריך ##################aceholder or selector if needed
+            
+            from datetime import datetime
+
+            logging.info('Waiting for the calendar component to be visible...')
+            page.wait_for_selector('p-calendar:visible', timeout=5000)
+
+            # Wait for the input field inside the calendar to be visible
+            logging.info('Waiting for the input field inside the calendar...')
+            page.wait_for_selector('input[placeholder="dd/mm/yyyy"]:visible', timeout=5000)
+
+            # Get the current date in the desired format dd/mm/yyyy
+            current_date = datetime.now().strftime('%d/%m/%Y')
+            logging.info(f'Entering the current date {current_date} in the input field...')
+
+            # Fill the date into the input field
+            page.fill('input[placeholder="dd/mm/yyyy"]:visible', current_date)
+
+
+            # Optional: Add a small delay after clicking the calendar button
+            time.sleep(1)
+
+        
+
+            ######################  מחזור עסקאות #############                   
+
+           
+            # Wait for the text box to be available and visible
+            # Wait for the span element to be available and visible
+            page.wait_for_selector('span.input-pure.float-label.input-with-icon:visible', timeout=5000)
+
+            # Enter the value 10000 into the input field with id="annualTurnover9"
+            page.fill('input#annualTurnover9', '10000')
+
+                    # Optional: Add delay if necessary
+            time.sleep(1)
+
+            #####################  הבא ######################
+            # Click on the "הבא" button
+            logging.info('Clicking on the "הבא" button...')
+            page.click('span:has-text("הבא")')  # Using the text inside the span to target it
+
+            ###################### סיום #####################
 
             # Optionally, you can take a screenshot to verify the result
             logging.info('Taking a screenshot after clicking the button...')
