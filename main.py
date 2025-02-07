@@ -99,6 +99,7 @@ def main():
 
             ################## תקופת זכאות ######################
             # Wait for the combobox element to be visible and available
+
             logging.info('Waiting for the combobox to be available...')
             page.wait_for_selector('span[role="combobox"]', state='attached', timeout=5000)
 
@@ -114,9 +115,15 @@ def main():
             logging.info('Waiting for the dropdown list to be visible...')
             page.wait_for_selector('ul[role="listbox"]:visible', timeout=5000)
 
-            # Select the item with the label "נובמבר-דצמבר 2023" from the dropdown list
-            logging.info('Selecting the item "נובמבר-דצמבר 2023" from the dropdown list...')
-            page.click('div.list-item-label[title="נובמבר-דצמבר 2023"]')
+            # Select the first item in the list (assuming it's a div with class "list-item-label")
+            logging.info('Selecting the first item from the dropdown list...')
+            page.click('ul[role="listbox"] div.list-item-label')
+
+            # Wait for the combobox to reflect the selection (this ensures the value is updated)
+            logging.info('Waiting for the input field to reflect the selected value...')
+            page.wait_for_selector('span[role="combobox"] >> input:checked', timeout=5000)
+
+            logging.info('First item successfully selected and updated in the combobox.')
 
      
 
@@ -146,16 +153,20 @@ def main():
 
             ######################  מחזור עסקאות #############                   
 
-           
-            # Wait for the text box to be available and visible
-            # Wait for the span element to be available and visible
-            page.wait_for_selector('span.input-pure.float-label.input-with-icon:visible', timeout=5000)
+            # Try closing any modal or overlay if present
+            
+            logging.info('Waiting for the input field with dada-cy="textbox_annualTurnover" to be visible...')
 
-            # Enter the value 10000 into the input field with id="annualTurnover9"
-            page.fill('input#annualTurnover9', '10000')
+            # Wait for the element with dada-cy="textbox_annualTurnover" to be visible
+            page.wait_for_selector('[dada-cy="textbox_annualTurnover"]:visible', timeout=5000)
 
-                    # Optional: Add delay if necessary
-            time.sleep(1)
+            # Log message indicating we're about to fill the value
+            logging.info('Filling the annual turnover field with value...')
+
+            # Use the fill function to input the value into the input field inside the element with dada-cy="textbox_annualTurnover"
+            # Here, you might also want to specify a more specific input field inside the div if needed
+            page.fill('[dada-cy="textbox_annualTurnover"] input[data-cy="textbox_input"]', "10000")
+
 
             #####################  הבא ######################
             # Click on the "הבא" button
