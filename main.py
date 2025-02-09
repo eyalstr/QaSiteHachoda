@@ -246,6 +246,46 @@ def main():
             # --- CONFIRM ACTION ---
             logging.info('"הבא" (Next) button clicked successfully.')
 
+
+            ######################  בחירת מייצג ############
+
+            logging.info('Waiting for the button to be visible...')
+            page.wait_for_selector('button[data-cy="button_toggle_applicantType1"]:visible', timeout=5000)
+
+            logging.info('Clicking on the "עו"ד" button...')
+            page.click('button[data-cy="button_toggle_applicantType1"]')
+
+            # Log confirmation
+            logging.info('Button "עו"ד" clicked successfully.')
+
+            ######################  פרטי התקשרות  ############
+            logging.info('Waiting for the email input field to be visible...')
+            page.wait_for_selector('input[data-cy="textbox_input"][id^="email"]', state='visible', timeout=5000)
+
+            logging.info('Entering email "eyalst@justice.gov.il" into the email field...')
+            page.fill('input[data-cy="textbox_input"][id^="email"]', 'eyalst@justice.gov.il')
+
+            logging.info('Email entered successfully.')
+
+
+            logging.info('Waiting for the email verification input field to be visible...')
+            page.wait_for_selector('input[data-cy="textbox_input"][id^="emailVerification"]', state='visible', timeout=5000)
+
+            logging.info('Entering email "eyalst@justice.gov.il" into the email verification field...')
+            page.fill('input[data-cy="textbox_input"][id^="emailVerification"]', 'eyalst@justice.gov.il')
+
+            logging.info('Email verification entered successfully.')
+
+
+            logging.info('Waiting for the phone number input field to be visible...')
+            page.wait_for_selector('input[data-cy="textbox_input"][id^="phoneNum"]', state='visible', timeout=5000)
+
+            logging.info('Entering phone number "0545664886" into the phone number field...')
+            page.fill('input[data-cy="textbox_input"][id^="phoneNum"]', '0545664886')
+
+            logging.info('Phone number entered successfully.')
+
+
             ###################### סיום #####################
 
             # Optionally, you can take a screenshot to verify the result
