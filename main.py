@@ -99,16 +99,28 @@ def main():
 
             ################ הכנס מספר תביעה ############
            
-            # Wait for the input field with data-cy="textbox_input" to be visible
+            from datetime import datetime
+
+            # Generate the 9-digit value
+            current_datetime = datetime.now().strftime('%Y%m%d%H%M')  # Example: 202502091830
+            unique_number = '5' + current_datetime[-8:]  # Take only the last 8 digits after '5'
+
+            # Logging for debugging
+            logging.info(f'Generated 9-digit number: {unique_number}')
+
+            # Wait for the input field
             logging.info('Waiting for input field with data-cy="textbox_input"...')
             page.wait_for_selector('[data-cy="textbox_input"]', state='visible')
 
-            # Enter the value 512341234 into the input field
-            logging.info('Entering value into the input field with data-cy="textbox_input"...')
-            page.fill('[data-cy="textbox_input"]', '512341234')
+            # Enter the generated 9-digit number
+            logging.info(f'Entering value: {unique_number} into the input field...')
+            page.fill('[data-cy="textbox_input"]', unique_number)
+
 
             ################## תקופת זכאות ######################
-            # --- WAIT AND CLICK COMBO BOX ---
+
+            import random
+
             logging.info('Waiting for the combobox to be available...')
             page.wait_for_selector('span[role="combobox"]', state='attached', timeout=5000)
 
@@ -117,57 +129,38 @@ def main():
 
             logging.info('Clicking the combobox to open the dropdown...')
             page.click('span[role="combobox"]')
+            time.sleep(1)  # Allow UI time to update
 
             logging.info('Waiting for the dropdown list to be visible...')
             page.wait_for_selector('ul[role="listbox"]:visible', timeout=5000)
 
-            logging.info('Selecting the first item from the dropdown list...')
-            page.click('ul[role="listbox"] div.list-item-label')
+            # Randomly select either the first or second option
+            chosen_index = random.choice([1, 2])  # Select index 1 (first) or 2 (second)
+            logging.info(f'Randomly selecting option {chosen_index} from the dropdown list...')
+            page.click(f'ul[role="listbox"] li:nth-child({chosen_index})')
 
-            # --- FORCE SELECTION COMMIT ---
+            # Confirm selection via keyboard event
+            page.press('ul[role="listbox"]', 'Enter')
+
+            # Force UI to update
             logging.info('Triggering change event on combobox...')
-            page.evaluate('''
+            page.evaluate('''() => {
                 let combobox = document.querySelector('span[role="combobox"]');
                 if (combobox) {
                     combobox.dispatchEvent(new Event('change', { bubbles: true }));
                     combobox.dispatchEvent(new Event('blur', { bubbles: true }));
                 }
-            ''')
+            }''')
 
-            # --- MOVE FOCUS AWAY ---
+            # Check if selection was registered
+            selected_value = page.inner_text('span[role="combobox"]')
+            logging.info(f'Combo box selected value: {selected_value}')
+            if selected_value.strip() == "":
+                logging.error("Dropdown selection did not persist!")
+
+            # Move focus away
             logging.info('Moving focus away from combobox...')
-            page.click('body')  # Click outside the dropdown to confirm selection
-
-            # --- WAIT BEFORE MOVING TO NEXT FIELD ---
-            logging.info('Adding small delay before proceeding...')
-            time.sleep(1)
-
-            # --- CONTINUE TO CALENDAR ---
-            logging.info('Waiting for the calendar input to be visible...')
-            page.wait_for_selector('input[placeholder="dd/mm/yyyy"]:visible', timeout=5000)
-
-            logging.info('Clicking the calendar input...')
-            page.click('input[placeholder="dd/mm/yyyy"]:visible')
-
-            logging.info('Entering the current date...')
-            from datetime import datetime
-            current_date = datetime.now().strftime('%d/%m/%Y')
-            page.fill('input[placeholder="dd/mm/yyyy"]:visible', current_date)
-
-            # --- FORCE DATE SELECTION TO REGISTER ---
-            logging.info('Triggering change event on date field...')
-            page.evaluate('''
-                let dateInput = document.querySelector('input[placeholder="dd/mm/yyyy"]');
-                if (dateInput) {
-                    dateInput.dispatchEvent(new Event('input', { bubbles: true }));
-                    dateInput.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-            ''')
-
-            # --- MOVE FOCUS AWAY FROM DATE INPUT ---
-            logging.info('Clicking outside to confirm date selection...')
-            page.click('body')  # Ensure the value gets registered
-
+            page.click('body')
 
             ################### הכנס תאריך ##################aceholder or selector if needed
             
