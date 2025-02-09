@@ -6,7 +6,17 @@ from datetime import datetime
 import random
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+#logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+logging.basicConfig(
+    filename='error_log.txt',  # Specify the log file name
+    level=logging.INFO,        # Set the logging level to INFO
+    format='%(asctime)s - %(levelname)s - %(message)s'  # Log format
+)
+
+file_handler = logging.FileHandler('page_content_log.html', mode='a', encoding='utf-8')
+file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+logging.getLogger().addHandler(file_handler)
 
 def main():
     with sync_playwright() as p:
@@ -98,80 +108,150 @@ def main():
             page.fill('[data-cy="textbox_input"]', '512341234')
 
             ################## תקופת זכאות ######################
-            # Wait for the combobox element to be visible and available
-
+            # --- WAIT AND CLICK COMBO BOX ---
             logging.info('Waiting for the combobox to be available...')
             page.wait_for_selector('span[role="combobox"]', state='attached', timeout=5000)
 
-            # Ensure that the combobox is visible (element is not hidden)
             logging.info('Waiting for the combobox to be visible...')
             page.wait_for_selector('span[role="combobox"]:visible', timeout=5000)
 
-            # Click the combobox to open the dropdown
             logging.info('Clicking the combobox to open the dropdown...')
             page.click('span[role="combobox"]')
 
-            # Wait for the dropdown list (with the role="listbox") to be visible
             logging.info('Waiting for the dropdown list to be visible...')
             page.wait_for_selector('ul[role="listbox"]:visible', timeout=5000)
 
-            # Select the first item in the list (assuming it's a div with class "list-item-label")
             logging.info('Selecting the first item from the dropdown list...')
             page.click('ul[role="listbox"] div.list-item-label')
 
-            # Wait for the combobox to reflect the selection (this ensures the value is updated)
-            logging.info('Waiting for the input field to reflect the selected value...')
-            page.wait_for_selector('span[role="combobox"] >> input:checked', timeout=5000)
+            # --- FORCE SELECTION COMMIT ---
+            logging.info('Triggering change event on combobox...')
+            page.evaluate('''
+                let combobox = document.querySelector('span[role="combobox"]');
+                if (combobox) {
+                    combobox.dispatchEvent(new Event('change', { bubbles: true }));
+                    combobox.dispatchEvent(new Event('blur', { bubbles: true }));
+                }
+            ''')
 
-            logging.info('First item successfully selected and updated in the combobox.')
+            # --- MOVE FOCUS AWAY ---
+            logging.info('Moving focus away from combobox...')
+            page.click('body')  # Click outside the dropdown to confirm selection
 
-     
+            # --- WAIT BEFORE MOVING TO NEXT FIELD ---
+            logging.info('Adding small delay before proceeding...')
+            time.sleep(1)
+
+            # --- CONTINUE TO CALENDAR ---
+            logging.info('Waiting for the calendar input to be visible...')
+            page.wait_for_selector('input[placeholder="dd/mm/yyyy"]:visible', timeout=5000)
+
+            logging.info('Clicking the calendar input...')
+            page.click('input[placeholder="dd/mm/yyyy"]:visible')
+
+            logging.info('Entering the current date...')
+            from datetime import datetime
+            current_date = datetime.now().strftime('%d/%m/%Y')
+            page.fill('input[placeholder="dd/mm/yyyy"]:visible', current_date)
+
+            # --- FORCE DATE SELECTION TO REGISTER ---
+            logging.info('Triggering change event on date field...')
+            page.evaluate('''
+                let dateInput = document.querySelector('input[placeholder="dd/mm/yyyy"]');
+                if (dateInput) {
+                    dateInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    dateInput.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            ''')
+
+            # --- MOVE FOCUS AWAY FROM DATE INPUT ---
+            logging.info('Clicking outside to confirm date selection...')
+            page.click('body')  # Ensure the value gets registered
+
 
             ################### הכנס תאריך ##################aceholder or selector if needed
             
             from datetime import datetime
 
-            logging.info('Waiting for the calendar component to be visible...')
+            # --- WAIT FOR THE CALENDAR CONTAINER ---
+            logging.info('Waiting for the calendar container to be visible...')
             page.wait_for_selector('p-calendar:visible', timeout=5000)
 
-            # Wait for the input field inside the calendar to be visible
-            logging.info('Waiting for the input field inside the calendar...')
+            # --- WAIT FOR THE INPUT FIELD INSIDE THE CALENDAR ---
+            logging.info('Waiting for the calendar input field to be visible...')
             page.wait_for_selector('input[placeholder="dd/mm/yyyy"]:visible', timeout=5000)
 
-            # Get the current date in the desired format dd/mm/yyyy
-            current_date = datetime.now().strftime('%d/%m/%Y')
-            logging.info(f'Entering the current date {current_date} in the input field...')
+            # --- CLICK THE CALENDAR BUTTON TO OPEN DATE PICKER ---
+            logging.info('Clicking the calendar button to open the date picker...')
+            page.click('button.p-datepicker-trigger')
 
-            # Fill the date into the input field
-            page.fill('input[placeholder="dd/mm/yyyy"]:visible', current_date)
+            # --- WAIT FOR THE CALENDAR TO BE VISIBLE ---
+            logging.info('Waiting for the calendar pop-up to appear...')
+            page.wait_for_selector('.p-datepicker', state='visible', timeout=5000)
 
+            # --- SELECT TODAY'S DATE FROM THE DATE PICKER ---
+            logging.info('Selecting today\'s date from the date picker...')
+            page.click('.p-datepicker-today')  # Adjust if necessary based on your UI
 
-            # Optional: Add a small delay after clicking the calendar button
-            time.sleep(1)
+            # --- FORCE INPUT CHANGE EVENT IF NECESSARY ---
+            logging.info('Triggering change event on date field...')
+            page.evaluate('''
+                let dateInput = document.querySelector('input[placeholder="dd/mm/yyyy"]');
+                if (dateInput) {
+                    dateInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    dateInput.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            ''')
 
-        
+            # --- CLICK OUTSIDE TO CONFIRM SELECTION ---
+            logging.info('Clicking outside to confirm date selection...')
+            page.click('body')  # Ensure the value gets registered
 
-            ######################  מחזור עסקאות #############                   
+            ##################### תביעה ע"ס ################
 
-            # Try closing any modal or overlay if present
-            
-            logging.info('Waiting for the input field with dada-cy="textbox_annualTurnover" to be visible...')
-
-            # Wait for the element with dada-cy="textbox_annualTurnover" to be visible
+            # --- WAIT FOR THE PARENT CONTAINER TO BE PRESENT ---
+            logging.info('Waiting for the parent container of the annual turnover field...')
             page.wait_for_selector('[dada-cy="textbox_annualTurnover"]:visible', timeout=5000)
 
-            # Log message indicating we're about to fill the value
-            logging.info('Filling the annual turnover field with value...')
+            # --- WAIT FOR THE INPUT FIELD INSIDE THE PARENT ---
+            logging.info('Waiting for the actual input field to be visible...')
+            page.wait_for_selector('[dada-cy="textbox_annualTurnover"] input[data-cy="textbox_input"]:visible', timeout=5000)
 
-            # Use the fill function to input the value into the input field inside the element with dada-cy="textbox_annualTurnover"
-            # Here, you might also want to specify a more specific input field inside the div if needed
-            page.fill('[dada-cy="textbox_annualTurnover"] input[data-cy="textbox_input"]', "10000")
+            # --- FILL THE INPUT FIELD WITH 10000 ---
+            logging.info('Entering value "10000" into the annual turnover field...')
+            page.fill('[dada-cy="textbox_annualTurnover"] input[data-cy="textbox_input"]', '10000')
+
+            # --- TRIGGER EVENTS TO ENSURE VALUE IS REGISTERED ---
+            logging.info('Triggering change event to ensure the field registers the input...')
+            page.evaluate('''
+                let inputField = document.querySelector('[dada-cy="textbox_annualTurnover"] input[data-cy="textbox_input"]');
+                if (inputField) {
+                    inputField.dispatchEvent(new Event('input', { bubbles: true }));
+                    inputField.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            ''')
+
+            # --- CLICK OUTSIDE TO CONFIRM SELECTION ---
+            logging.info('Clicking outside to confirm the field value...')
+            page.click('body')  # Ensures that the entered value gets properly registered
 
 
             #####################  הבא ######################
-            # Click on the "הבא" button
-            logging.info('Clicking on the "הבא" button...')
-            page.click('span:has-text("הבא")')  # Using the text inside the span to target it
+            
+            # --- WAIT FOR THE BUTTON CONTAINER TO BE VISIBLE ---
+            logging.info('Waiting for the wizard navigation container...')
+            page.wait_for_selector('.wizard-navigation-container:visible', timeout=5000)
+
+            # --- WAIT FOR THE "הבא" BUTTON TO BE INTERACTIVE ---
+            logging.info('Waiting for the "הבא" (Next) button to be enabled...')
+            page.wait_for_selector('button[data-cy="button_wizard_next"]:not([disabled])', timeout=5000)
+
+            # --- CLICK THE BUTTON ---
+            logging.info('Clicking the "הבא" (Next) button...')
+            page.click('button[data-cy="button_wizard_next"]')
+
+            # --- CONFIRM ACTION ---
+            logging.info('"הבא" (Next) button clicked successfully.')
 
             ###################### סיום #####################
 
