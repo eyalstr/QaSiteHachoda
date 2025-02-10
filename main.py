@@ -117,33 +117,54 @@ def main():
             page.fill('[data-cy="textbox_input"]', unique_number)
 
 
-            ################## תקופת זכאות ######################
+    ################## תקופת זכאות ######################
 
-            import random
-
-            logging.info('Waiting for the combobox to be available...')
+    
+        # --- WAIT FOR COMBOBOX TO BE ATTACHED AND VISIBLE ---
+            logging.info('Waiting for the combobox to be attached...')
             page.wait_for_selector('span[role="combobox"]', state='attached', timeout=5000)
 
             logging.info('Waiting for the combobox to be visible...')
             page.wait_for_selector('span[role="combobox"]:visible', timeout=5000)
 
+            # --- CLICK TO OPEN THE DROPDOWN ---
             logging.info('Clicking the combobox to open the dropdown...')
             page.click('span[role="combobox"]')
-            time.sleep(1)  # Allow UI time to update
 
+            # --- WAIT FOR THE DROPDOWN LIST TO BE VISIBLE ---
             logging.info('Waiting for the dropdown list to be visible...')
             page.wait_for_selector('ul[role="listbox"]:visible', timeout=5000)
 
-            # Randomly select either the first or second option
+            # --- VERIFY THE NUMBER OF OPTIONS IN THE LIST ---
+            options = page.locator('ul[role="listbox"] li')
+            option_count = options.count()
+            logging.info(f'Found {option_count} options in the dropdown.')
+
+            if option_count == 0:
+                logging.error('No options available in the dropdown!')
+                return
+
+            # --- RANDOMLY SELECT FIRST OR SECOND ITEM BASED ON TEXT CONTENT ---
             chosen_index = random.choice([1, 2])  # Select index 1 (first) or 2 (second)
             logging.info(f'Randomly selecting option {chosen_index} from the dropdown list...')
-            page.click(f'ul[role="listbox"] li:nth-child({chosen_index})')
 
-            # Confirm selection via keyboard event
-            page.press('ul[role="listbox"]', 'Enter')
+            # Select option based on its text content
+            if chosen_index == 1:
+                option_text = "נובמבר-דצמבר 2023"
+            else:
+                option_text = "ספטמבר-אוקטובר 2023"
 
-            # Force UI to update
-            logging.info('Triggering change event on combobox...')
+            # Locate the option by text content and click
+            option = page.locator(f'ul[role="listbox"] li:has-text("{option_text}")')
+            if option.is_visible():
+                option.click()
+                logging.info(f'Successfully selected option with text: "{option_text}"')
+            else:
+                logging.error(f'Option with text "{option_text}" is not visible.')
+                return
+
+            # --- FORCE SELECTION COMMIT (ENSURE VALUE IS REGISTERED) ---
+            logging.info('Triggering events to register selection...')
             page.evaluate('''() => {
                 let combobox = document.querySelector('span[role="combobox"]');
                 if (combobox) {
@@ -152,17 +173,17 @@ def main():
                 }
             }''')
 
-            # Check if selection was registered
+            # --- WAIT AND VERIFY SELECTION ---
+            logging.info('Verifying if selection persisted...')
+            time.sleep(1)  # Wait for UI to update
             selected_value = page.inner_text('span[role="combobox"]')
-            logging.info(f'Combo box selected value: {selected_value}')
-            if selected_value.strip() == "":
+            logging.info(f'Combo box selected value: "{selected_value.strip()}"')
+
+            if not selected_value.strip():
                 logging.error("Dropdown selection did not persist!")
 
-            # Move focus away
-            logging.info('Moving focus away from combobox...')
-            page.click('body')
 
-            ################### הכנס תאריך ##################aceholder or selector if needed
+    ################### הכנס תאריך ##################aceholder or selector if needed
             
             from datetime import datetime
 
