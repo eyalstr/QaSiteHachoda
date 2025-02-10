@@ -281,12 +281,17 @@ def main():
 
             ######################  פרטי התקשרות  ############
             logging.info('Waiting for the email input field to be visible...')
-            page.wait_for_selector('input[data-cy="textbox_input"][id^="email"]', state='visible', timeout=5000)
+           # Locate the parent container for the email input field
+            email_parent = page.locator('div[dada-cy="textbox_email"]')
 
-            logging.info('Entering email "eyalst@justice.gov.il" into the email field...')
-            page.fill('input[data-cy="textbox_input"][id^="email"]', 'eyalst@justice.gov.il')
+            # Locate the input inside the identified parent
+            email_input = email_parent.locator('input[data-cy="textbox_input"]')
 
-            logging.info('Email entered successfully.')
+            # Wait for it to be visible
+            email_input.wait_for(state="visible", timeout=5000)
+
+            # Fill in the email
+            email_input.fill("eyalst@justice.gov.il")
 
 
             logging.info('Waiting for the email verification input field to be visible...')
