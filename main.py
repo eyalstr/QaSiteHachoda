@@ -311,6 +311,20 @@ def main():
 
             logging.info('Phone number entered successfully.')
 
+                # Fix the class name issue with CSS.escape
+            import re  # Add this import to fix the 're' error
+            parent_locator = page.locator("div.p-element.moj-button.moj-primary" + re.escape(".0") + ".dark-on-light.auto-width")
+            
+            # Locate the button inside the parent and click it
+            button_locator = parent_locator.locator("button[data-cy='button_wizard_next'] span:text('הבא')")
+            
+            # Wait for the button to be visible and then click it
+            button_locator.wait_for(state="visible")
+            button_locator.click()
+
+            # Log the action
+            print("Clicked the 'הבא' button successfully.")
+
 
             ###################### סיום #####################
 
